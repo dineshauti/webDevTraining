@@ -13,6 +13,8 @@ import (
 
 var (
 	address *string
+	unit *string
+	temp float64
 )
 
 type tempObject struct {
@@ -27,7 +29,8 @@ type result struct {
 }
 
 func init() {
-	address = flag.String("city", "", "cwl <-city|--city> <cityName>")
+	address = flag.String("city", "", "clw <-city|--city> <cityName>. \n If the city name is a composite, then use quotes.")
+	unit = flag.String("unit", "", "clw [-unit|--unit] [c|celcius|f|fahrenheit]")
 }
 
 func main() {
@@ -59,8 +62,27 @@ func main() {
 		log.Fatal(jsonErr)
 	}
 
-	temp := temperature.List[0].Main.Temp -  273.15
+	if len(temperature.List) > 0 {
 
-	fmt.Printf("The temperature at %s is %4.2f celcius. \n",*address,temp)
+		if *unit == "c" || *unit == "celcius" || *unit == "" {
+			temp = temperature.List[0].Main.Temp -  273.15
+			fmt.Printf("The temperature in %s is %4.2f celcius. \n",*address,temp)
+		} else if *unit == "f" || *unit == "fahrenheit" {
+			temp = (temperature.List[0].Main.Temp *9)/5 - 459.67
+			fmt.Printf("The temperature in %s is %4.2f fahrenheit. \n",*address,temp)
+		} else {
+			fmt.Println("Unit invalid! Defaut set to Celcius.")
+			temp = temperature.List[0].Main.Temp -  273.15
+			fmt.Printf("The temperature in %s is %4.2f celcius. \n",*address,temp)
+		}
+
+	} else {
+		fmt.Println("City invalid! Please try with a valid city name or check help")
+		os.Exit(1)
+	}
+
+
+
+
 
 }
